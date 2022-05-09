@@ -13,8 +13,10 @@ class Ball {
   float x, y;
   float speedX, speedY;
   float radius;
+  bool left;
+  bool moving;
 
-  void Draw() { DrawCircle((int)x, (int)y, radius, WHITE); }
+  void Draw() { DrawCircle((int)x, (int)y, radius, RED); }
 };
 
 class Paddle {
@@ -36,6 +38,19 @@ int controls(std::vector<int> keys);
 void unload() {
   CloseAudioDevice();
   CloseWindow();
+}
+
+void resetBall(Ball &ball, Paddle &leftPaddle, Paddle &rightPaddle) {
+  if (ball.left) {
+    ball.x = leftPaddle.x + ball.radius / 2;
+    ball.y = leftPaddle.y;
+  } else {
+    ball.x = rightPaddle.x - ball.radius / 2;
+    ball.y = rightPaddle.y;
+  }
+  ball.speedX = 0;
+  ball.speedY = 0;
+  ball.moving = false;
 }
 
 int main() {
@@ -69,13 +84,6 @@ int main() {
     keys.insert(downRight);
   }
 
-  Ball ball;
-  ball.x = GetScreenWidth() / 2.0f;
-  ball.y = GetScreenHeight() / 2.0f;
-  ball.radius = 5;
-  ball.speedX = 300;
-  ball.speedY = 300;
-
   Paddle leftPaddle;
   leftPaddle.x = 50;
   leftPaddle.y = GetScreenHeight() / 2;
@@ -90,7 +98,21 @@ int main() {
   rightPaddle.height = 100;
   rightPaddle.speed = 500;
 
-  const char* winnerText = nullptr;
+  Ball ball;
+  ball.radius = 5;
+  ball.left = rand() % 2;
+  if (ball.left) {
+    ball.x = leftPaddle.x + ball.radius / 2;
+    ball.y = leftPaddle.y;
+  } else {
+    ball.x = rightPaddle.x - ball.radius / 2;
+    ball.y = rightPaddle.y;
+  }
+  ball.speedX = 0;
+  ball.speedY = 0;
+  ball.moving = false;
+
+  const char *winnerText = nullptr;
   bool win = false;
 
   // Collision Sound
@@ -111,6 +133,15 @@ int main() {
   int numFrames = 0;
 
   while (!WindowShouldClose()) {
+    if (IsKeyPressed(KEY_SPACE) && !ball.moving) {
+      ball.moving = true;
+      ball.speedX = 300;
+      ball.speedY = 300;
+      if (!ball.left) {
+        ball.speedX *= -1;
+        ball.speedY *= -1;
+      }
+    }
     if (!IsSoundPlaying(dramaticMusic)) PlaySound(dramaticMusic);
 
     ++numFrames;
@@ -133,19 +164,31 @@ int main() {
     if (IsKeyDown(upLeft)) {
       if (leftPaddle.y > leftPaddle.height / 2)
         leftPaddle.y -= leftPaddle.speed * GetFrameTime();
+      if (ball.left && !ball.moving) {
+        ball.y -= leftPaddle.speed * GetFrameTime();
+      }
     }
     if (IsKeyDown(downLeft)) {
       if (leftPaddle.y < GetScreenHeight() - leftPaddle.height / 2)
         leftPaddle.y += leftPaddle.speed * GetFrameTime();
+      if (ball.left && !ball.moving) {
+        ball.y += leftPaddle.speed * GetFrameTime();
+      }
     }
 
     if (IsKeyDown(upRight)) {
       if (rightPaddle.y > rightPaddle.height / 2)
         rightPaddle.y -= rightPaddle.speed * GetFrameTime();
+      if (!ball.left && !ball.moving) {
+        ball.y -= rightPaddle.speed * GetFrameTime();
+      }
     }
     if (IsKeyDown(downRight)) {
       if (rightPaddle.y < GetScreenHeight() - rightPaddle.height / 2)
         rightPaddle.y += rightPaddle.speed * GetFrameTime();
+      if (!ball.left && !ball.moving) {
+        ball.y += rightPaddle.speed * GetFrameTime();
+      }
     }
 
     if (IsKeyDown(KEY_Y)) {
@@ -180,16 +223,15 @@ int main() {
     if (ball.x < 0) {
       winnerText = "Left Player Sucks!";
       win = true;
+      ball.moving = false;
     }
     if (ball.x > GetScreenWidth()) {
       winnerText = "Right Player Sucks!";
       win = true;
+      ball.moving = false;
     }
     if (winnerText && IsKeyPressed(KEY_SPACE)) {
-      ball.x = GetScreenWidth() / 2;
-      ball.y = GetScreenHeight() / 2;
-      ball.speedX = 300;
-      ball.speedY = 300;
+      resetBall(ball, leftPaddle, rightPaddle);
       winnerText = nullptr;
       win = false;
     }
@@ -197,9 +239,15 @@ int main() {
     BeginDrawing();
     ClearBackground(BLACK);
 
-    ball.Draw();
+    if (!ball.moving) {
+      int textWidth = MeasureText("Press Space", 40);
+      DrawText("Press Space", GetScreenWidth() / 2 - textWidth / 2,
+               GetScreenHeight() / 2 + 30, 40, YELLOW);
+    }
+
     leftPaddle.Draw();
     rightPaddle.Draw();
+    ball.Draw();
 
     if (win) {
       int textWidth = MeasureText(winnerText, 60);
