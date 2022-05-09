@@ -39,6 +39,9 @@ int intro() {
     BeginDrawing();
     DrawRectangle(GetScreenWidth() / 10 + 50, GetScreenHeight() / 2,
                   GetScreenWidth() / 3 * 2 + 20, 5, BLACK);
+    int textWidth = MeasureText("Press Space", 30);
+    DrawText("Press Space", GetScreenWidth() / 2 - textWidth / 2,
+             GetScreenHeight() / 4 * 3, 30, BLACK);
     EndDrawing();
   }
 
