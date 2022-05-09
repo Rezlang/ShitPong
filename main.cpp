@@ -42,10 +42,10 @@ void unload() {
 
 void resetBall(Ball &ball, Paddle &leftPaddle, Paddle &rightPaddle) {
   if (ball.left) {
-    ball.x = leftPaddle.x + ball.radius / 2;
+    ball.x = leftPaddle.x + ball.radius;
     ball.y = leftPaddle.y;
   } else {
-    ball.x = rightPaddle.x - ball.radius / 2;
+    ball.x = rightPaddle.x - ball.radius;
     ball.y = rightPaddle.y;
   }
   ball.speedX = 0;
@@ -102,10 +102,10 @@ int main() {
   ball.radius = 5;
   ball.left = rand() % 2;
   if (ball.left) {
-    ball.x = leftPaddle.x + ball.radius / 2;
+    ball.x = leftPaddle.x + ball.radius;
     ball.y = leftPaddle.y;
   } else {
-    ball.x = rightPaddle.x - ball.radius / 2;
+    ball.x = rightPaddle.x - ball.radius;
     ball.y = rightPaddle.y;
   }
   ball.speedX = 0;
@@ -162,32 +162,36 @@ int main() {
     }
 
     if (IsKeyDown(upLeft)) {
-      if (leftPaddle.y > leftPaddle.height / 2)
+      if (leftPaddle.y > leftPaddle.height / 2) {
         leftPaddle.y -= leftPaddle.speed * GetFrameTime();
-      if (ball.left && !ball.moving) {
-        ball.y -= leftPaddle.speed * GetFrameTime();
+        if (ball.left && !ball.moving) {
+          ball.y -= leftPaddle.speed * GetFrameTime();
+        }
       }
     }
     if (IsKeyDown(downLeft)) {
-      if (leftPaddle.y < GetScreenHeight() - leftPaddle.height / 2)
+      if (leftPaddle.y < GetScreenHeight() - leftPaddle.height / 2) {
         leftPaddle.y += leftPaddle.speed * GetFrameTime();
-      if (ball.left && !ball.moving) {
-        ball.y += leftPaddle.speed * GetFrameTime();
+        if (ball.left && !ball.moving) {
+          ball.y += leftPaddle.speed * GetFrameTime();
+        }
       }
     }
 
     if (IsKeyDown(upRight)) {
-      if (rightPaddle.y > rightPaddle.height / 2)
+      if (rightPaddle.y > rightPaddle.height / 2) {
         rightPaddle.y -= rightPaddle.speed * GetFrameTime();
-      if (!ball.left && !ball.moving) {
-        ball.y -= rightPaddle.speed * GetFrameTime();
+        if (!ball.left && !ball.moving) {
+          ball.y -= rightPaddle.speed * GetFrameTime();
+        }
       }
     }
     if (IsKeyDown(downRight)) {
-      if (rightPaddle.y < GetScreenHeight() - rightPaddle.height / 2)
+      if (rightPaddle.y < GetScreenHeight() - rightPaddle.height / 2) {
         rightPaddle.y += rightPaddle.speed * GetFrameTime();
-      if (!ball.left && !ball.moving) {
-        ball.y += rightPaddle.speed * GetFrameTime();
+        if (!ball.left && !ball.moving) {
+          ball.y += rightPaddle.speed * GetFrameTime();
+        }
       }
     }
 
@@ -221,11 +225,13 @@ int main() {
     }
 
     if (ball.x < 0) {
+      ball.left = true;
       winnerText = "Left Player Sucks!";
       win = true;
       ball.moving = false;
     }
     if (ball.x > GetScreenWidth()) {
+      ball.left = false;
       winnerText = "Right Player Sucks!";
       win = true;
       ball.moving = false;
@@ -239,15 +245,15 @@ int main() {
     BeginDrawing();
     ClearBackground(BLACK);
 
+    leftPaddle.Draw();
+    rightPaddle.Draw();
+    ball.Draw();
+
     if (!ball.moving) {
       int textWidth = MeasureText("Press Space", 40);
       DrawText("Press Space", GetScreenWidth() / 2 - textWidth / 2,
                GetScreenHeight() / 2 + 30, 40, YELLOW);
     }
-
-    leftPaddle.Draw();
-    rightPaddle.Draw();
-    ball.Draw();
 
     if (win) {
       int textWidth = MeasureText(winnerText, 60);
