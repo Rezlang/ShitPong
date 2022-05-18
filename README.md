@@ -1,2 +1,2 @@
-# ShitPong
-a shitty version pong made in C++ using Raylib
+# Pong Clone
+a poorly made clone of pong made in C++ using Raylib
